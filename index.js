@@ -26,6 +26,10 @@ const queue = [];
 client.on("message", (channel, tags, message, self) => {
   if (self) return;
 
+  if (config.ignore.includes(tags.username)) {
+    return;
+  }
+
   // Ignore messages starting with '!' and '@'
   if (message.at(0) === "@") {
     message = message.split(" ").splice(1).join(" ");

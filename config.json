@@ -11,5 +11,13 @@
         "oegoe_": "oegoe",
         "licensedtaddus": "taddus",
         "ixsen_": "9sen"
-    }
+    },
+    "ignore": [
+        "streamlabs",
+        "streamelements",
+        "nightbot",
+        "moobot",
+        "fossabot",
+        "wizebot"
+    ]
 }
