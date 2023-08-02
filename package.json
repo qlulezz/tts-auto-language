@@ -1,0 +1,19 @@
+{
+  "name": "tts-auto-language",
+  "version": "1.0.0",
+  "description": "Twitch TTS Bot but the voice changes based on the language of each message.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "build": "pkg index.js --targets=node18-win-x64 --out-path=./build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "languagedetect": "^2.0.0",
+    "say": "^0.16.0",
+    "tmi.js": "^1.8.5"
+  }
+}
