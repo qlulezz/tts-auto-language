@@ -19,7 +19,14 @@ const client = new tmi.Client({
   channels: config.twitch_channel_names,
 });
 
-client.connect().catch(console.error);
+client.connect().catch((err) => {
+  logRed(
+    "Failed to login! If you need an OAuth token, please visit https://twitchapps.com/tmi/ and click on 'connect'."
+  );
+  console.log(
+    "Remember to include the 'oauth:' part of the token. You can always revoke access here: https://twitch.tv/settings/connections"
+  );
+});
 
 const queue = [];
 
@@ -98,4 +105,8 @@ function replaceName(name) {
     return config.name_replacement[name];
   }
   return name;
+}
+
+function logRed(text) {
+  console.log(`\u001b[1;31m${text}\u001b[0m`);
 }
