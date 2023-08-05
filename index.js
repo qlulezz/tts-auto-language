@@ -1,11 +1,12 @@
 const fs = require("fs");
 const tmi = require("tmi.js");
 const say = require("say");
+const { checkForCommand } = require("./commands");
 const LanguageDetect = require("languagedetect");
 
 const lngDetector = new LanguageDetect();
 
-const config = JSON.parse(fs.readFileSync("config.json"));
+let config = JSON.parse(fs.readFileSync("config.json"));
 say.getInstalledVoices((err, voices) =>
   console.log("Available voices", voices)
 );
@@ -28,9 +29,28 @@ client.connect().catch((err) => {
   );
 });
 
-const queue = [];
+let queue = [];
 
 client.on("message", (channel, tags, message, self) => {
+  // Check for commands
+  // Only do that if channel name is username
+  if (channel === "#" + tags.username) {
+    const command = checkForCommand(message);
+    switch (command.command) {
+      case "tts-nickname":
+        console.log("Command executed:", command);
+        setNickname(command.userName, command.rawInput);
+        break;
+      case "tts-stop":
+        console.log("Command executed:", command);
+        queue = [];
+        say.stop();
+        break;
+      default:
+        break;
+    }
+  }
+
   if (self) return;
 
   if (config.ignore.includes(tags.username)) {
@@ -109,4 +129,11 @@ function replaceName(name) {
 
 function logRed(text) {
   console.log(`\u001b[1;31m${text}\u001b[0m`);
+}
+
+function setNickname(username, nickname) {
+  let name_replacement = config.name_replacement;
+  name_replacement[username.toLowerCase()] = nickname;
+  config = { ...config, name_replacement };
+  fs.writeFileSync("config.json", JSON.stringify(config, null, 2));
 }

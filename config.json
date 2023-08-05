@@ -1,23 +1,25 @@
 {
-    "twitch_bot_name": "qlulezz",
-    "twitch_channel_names": ["jani114"],
-    "twitch_oauth": "oauth:twitchauthtoken",
-    "ignore_exclamation": true,
-    "say_name": false,
-    "skip_consecutive_name": true,
-    "german_voice": "Microsoft Hedda Desktop",
-    "english_voice": "Microsoft David Desktop",
-    "name_replacement": {
-        "oegoe_": "oegoe",
-        "licensedtaddus": "taddus",
-        "ixsen_": "9sen"
-    },
-    "ignore": [
-        "streamlabs",
-        "streamelements",
-        "nightbot",
-        "moobot",
-        "fossabot",
-        "wizebot"
-    ]
+  "twitch_bot_name": "qlulezz",
+  "twitch_channel_names": [
+    "#jani114"
+  ],
+  "twitch_oauth": "oauth:twitchauthtoken",
+  "ignore_exclamation": true,
+  "say_name": false,
+  "skip_consecutive_name": true,
+  "german_voice": "Microsoft Hedda Desktop",
+  "english_voice": "Microsoft David Desktop",
+  "name_replacement": {
+    "oegoe_": "oegoe",
+    "licensedtaddus": "taddus",
+    "ixsen_": "9sen"
+  },
+  "ignore": [
+    "streamlabs",
+    "streamelements",
+    "nightbot",
+    "moobot",
+    "fossabot",
+    "wizebot"
+  ]
 }
