@@ -1,33 +1,47 @@
 const fs = require("fs");
 const tmi = require("tmi.js");
 const say = require("say");
-const { checkForCommand } = require("./commands");
+const { checkForCommand } = require("./src/commands");
+const { log } = require("./src/utils");
+const { startViewerBot } = require("./src/viewers");
 const LanguageDetect = require("languagedetect");
 
 const lngDetector = new LanguageDetect();
 
 let config = JSON.parse(fs.readFileSync("config.json"));
-say.getInstalledVoices((err, voices) =>
-  console.log("Available voices", voices)
-);
+say.getInstalledVoices((err, voices) => {
+  err ? console.error(err) : console.log("Available voices", voices);
+});
 
 const client = new tmi.Client({
   options: { debug: true },
   identity: {
-    username: config.twitch_bot_name,
-    password: config.twitch_oauth,
+    username: config.auth.twitch_bot_name,
+    password: config.auth.twitch_oauth,
   },
-  channels: config.twitch_channel_names,
+  channels: [config.auth.twitch_channel_name],
 });
 
-client.connect().catch((err) => {
-  logRed(
-    "Failed to login! If you need an OAuth token, please visit https://twitchapps.com/tmi/ and click on 'connect'."
-  );
-  console.log(
-    "Remember to include the 'oauth:' part of the token. You can always revoke access here: https://twitch.tv/settings/connections"
-  );
-});
+client
+  .connect()
+  .then(async () => {
+    if (config.viewers.enable_viewer_bot) {
+      await startViewerBot();
+    }
+  })
+  .catch((err) => {
+    if (err === "Login authentication failed") {
+      log(
+        "Failed to login! If you need an OAuth token, please visit https://twitchapps.com/tmi/ and click on 'connect'.",
+        "red"
+      );
+      log(
+        "Remember to include the 'oauth:' part of the token. You can always revoke access here: https://twitch.tv/settings/connections"
+      );
+    } else {
+      log(err);
+    }
+  });
 
 let queue = [];
 
@@ -38,11 +52,11 @@ client.on("message", (channel, tags, message, self) => {
     const command = checkForCommand(message);
     switch (command.command) {
       case "tts-nickname":
-        console.log("Command executed:", command);
+        log("Command executed:", "blue", command);
         setNickname(command.userName, command.rawInput);
         break;
       case "tts-stop":
-        console.log("Command executed:", command);
+        log("Command executed:", "blue", command);
         queue = [];
         say.stop();
         break;
@@ -53,7 +67,7 @@ client.on("message", (channel, tags, message, self) => {
 
   if (self) return;
 
-  if (config.ignore.includes(tags.username)) {
+  if (config.tts.ignore.includes(tags.username)) {
     return;
   }
 
@@ -62,10 +76,7 @@ client.on("message", (channel, tags, message, self) => {
     message = message.split(" ").splice(1).join(" ");
   }
 
-  if (
-    config.ignore_exclamation &&
-    (message.at(0) === "!" || message.at(0) === "@")
-  ) {
+  if (config.tts.ignore_exclamation && (message.at(0) === "!" || message.at(0) === "@")) {
     return;
   }
 
@@ -75,7 +86,7 @@ client.on("message", (channel, tags, message, self) => {
   queue.push({
     user: replaceName(tags.username),
     message: message,
-    voice: german ? config.german_voice : config.english_voice,
+    voice: german ? config.tts.voices.german : config.tts.voices.english,
   });
 
   // If the queue was empty before adding this message, start reading immediately
@@ -94,7 +105,7 @@ function processQueue() {
   const { user, message, voice } = queue[0];
 
   say.speak(
-    config.say_name && config.skip_consecutive_name && lastUsername !== user
+    config.tts.say_name && config.tts.skip_consecutive_name && lastUsername !== user
       ? `${user}: ${message}`
       : message,
     voice,
@@ -121,19 +132,19 @@ function isGerman(matches) {
 }
 
 function replaceName(name) {
-  if (config.name_replacement[name]) {
-    return config.name_replacement[name];
+  let newName = name;
+  if (config.tts.name_replacement[name]) {
+    newName = config.tts.name_replacement[name];
   }
-  return name;
-}
-
-function logRed(text) {
-  console.log(`\u001b[1;31m${text}\u001b[0m`);
+  if (!config.tts.read_numbers_in_name) {
+    newName = newName.replace(/[0-9]/g, "");
+  }
+  return newName;
 }
 
 function setNickname(username, nickname) {
-  let name_replacement = config.name_replacement;
+  let name_replacement = config.tts.name_replacement;
   name_replacement[username.toLowerCase()] = nickname;
-  config = { ...config, name_replacement };
+  config.tts = { ...config.tts, name_replacement };
   fs.writeFileSync("config.json", JSON.stringify(config, null, 2));
 }

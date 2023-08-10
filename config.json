@@ -1,25 +1,31 @@
 {
-  "twitch_bot_name": "qlulezz",
-  "twitch_channel_names": [
-    "#jani114"
-  ],
-  "twitch_oauth": "oauth:twitchauthtoken",
-  "ignore_exclamation": true,
-  "say_name": false,
-  "skip_consecutive_name": true,
-  "german_voice": "Microsoft Hedda Desktop",
-  "english_voice": "Microsoft David Desktop",
-  "name_replacement": {
-    "oegoe_": "oegoe",
-    "licensedtaddus": "taddus",
-    "ixsen_": "9sen"
+  "auth": {
+    "twitch_bot_name": "qlulezz",
+    "twitch_channel_name": "jani114",
+    "twitch_oauth": "oauth:twitchauthtoken"
   },
-  "ignore": [
-    "streamlabs",
-    "streamelements",
-    "nightbot",
-    "moobot",
-    "fossabot",
-    "wizebot"
-  ]
+  "tts": {
+    "ignore_exclamation": true,
+    "say_name": true,
+    "read_numbers_in_name": false,
+    "skip_consecutive_name": true,
+    "voices": {
+      "german": "Microsoft Hedda Desktop",
+      "english": "Microsoft David Desktop"
+    },
+    "name_replacement": {
+      "oegoe_": "oegoe",
+      "licensedtaddus": "taddus",
+      "ixsen_": "9sen"
+    },
+    "ignore": ["streamlabs", "streamelements", "nightbot", "moobot", "fossabot", "wizebot"]
+  },
+  "viewers": {
+    "enable_viewer_bot": true,
+    "include_bots": true,
+    "join_message": "Joined (+): {{users}}",
+    "leave_message": "Left (-): {{users}}",
+    "enable_viewer_count": true,
+    "count_message": "There are currently {{count}} viewers (Bots included)"
+  }
 }
