@@ -5,12 +5,19 @@ const { checkForCommand } = require("./src/commands");
 const { log } = require("./src/utils");
 const { startViewerBot } = require("./src/viewers");
 const LanguageDetect = require("languagedetect");
+const { readText, availableVoices } = require("./src/google");
 
 const lngDetector = new LanguageDetect();
 
 let config = JSON.parse(fs.readFileSync("config.json"));
 say.getInstalledVoices((err, voices) => {
-  err ? console.error(err) : console.log("Available voices", voices);
+  if (err) {
+    log("Error with Voices:", "red", err);
+  } else {
+    const exportVoices = voices.concat(availableVoices);
+    fs.writeFileSync("voices.txt", exportVoices.join("\n"));
+    log("You can find all available voices in voices.txt", "blue");
+  }
 });
 
 const client = new tmi.Client({
@@ -80,6 +87,13 @@ client.on("message", (channel, tags, message, self) => {
     return;
   }
 
+  if (
+    message.split(" ").length >= config.tts.max_words &&
+    message.length >= config.tts.max_characters
+  ) {
+    return;
+  }
+
   const matches = lngDetector.detect(message);
   const german = isGerman(matches);
 
@@ -96,29 +110,36 @@ client.on("message", (channel, tags, message, self) => {
 });
 
 let lastUsername = "";
-function processQueue() {
+async function processQueue() {
   // If the queue is empty, stop processing
   if (queue.length === 0) {
     return;
   }
 
   const { user, message, voice } = queue[0];
-
-  say.speak(
+  // Say name if say_name enabled, skip_consecutive enabled and the last user was spoken
+  const spokenText =
     config.tts.say_name && config.tts.skip_consecutive_name && lastUsername !== user
       ? `${user}: ${message}`
-      : message,
-    voice,
-    1.0,
-    (err) => {
-      if (err) {
-        console.error(err);
-      }
-      lastUsername = user;
-      queue.shift();
-      processQueue();
+      : message;
+
+  if (voice.toLowerCase().includes("google") && spokenText.split(" ").length < 100) {
+    await readText(spokenText, voice);
+    lastUsername = user;
+    queue.shift();
+    processQueue();
+    return;
+  }
+
+  say.speak(spokenText, voice, 1.0, (err) => {
+    if (err) {
+      log("Error trying to speak:", err, "red");
+      log("Make sure that the configured voice is listed in voices.txt");
     }
-  );
+    lastUsername = user;
+    queue.shift();
+    processQueue();
+  });
 }
 
 function isGerman(matches) {

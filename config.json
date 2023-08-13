@@ -9,8 +9,10 @@
     "say_name": true,
     "read_numbers_in_name": false,
     "skip_consecutive_name": true,
+    "max_words": 100,
+    "max_characters": 200,
     "voices": {
-      "german": "Microsoft Hedda Desktop",
+      "german": "Google German (Germany) de-DE",
       "english": "Microsoft David Desktop"
     },
     "name_replacement": {
