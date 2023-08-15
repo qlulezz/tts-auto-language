@@ -28,7 +28,7 @@ async function playAudioFromURL(url) {
 
     if (response.ok) {
       const arrayBuffer = await response.arrayBuffer();
-      const folderPath = path.join(process.cwd(), "../temp");
+      const folderPath = path.join(process.cwd(), "/temp");
       const filePath = path.join(folderPath, "last_message.mp3");
 
       // Temporarily save TTS audio as mp3 file

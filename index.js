@@ -121,7 +121,6 @@ async function processQueue() {
 
   if (config.tts.skip_emotes && emotes) {
     message = removeEmotes(message, emotes, config.tts.read_first_emote);
-    console.log(message);
   }
 
   // Say name if say_name enabled, skip_consecutive enabled and the last user was spoken
