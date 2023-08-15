@@ -2,7 +2,7 @@ const fs = require("fs");
 const tmi = require("tmi.js");
 const say = require("say");
 const { checkForCommand } = require("./src/commands");
-const { log } = require("./src/utils");
+const { log, removeEmotes } = require("./src/utils");
 const { startViewerBot } = require("./src/viewers");
 const LanguageDetect = require("languagedetect");
 const { readText, availableVoices } = require("./src/google");
@@ -21,7 +21,7 @@ say.getInstalledVoices((err, voices) => {
 });
 
 const client = new tmi.Client({
-  options: { debug: true },
+  options: { debug: config.auth.chat_debug_messages },
   identity: {
     username: config.auth.twitch_bot_name,
     password: config.auth.twitch_oauth,
@@ -101,6 +101,7 @@ client.on("message", (channel, tags, message, self) => {
     user: replaceName(tags.username),
     message: message,
     voice: german ? config.tts.voices.german : config.tts.voices.english,
+    emotes: tags.emotes,
   });
 
   // If the queue was empty before adding this message, start reading immediately
@@ -116,7 +117,13 @@ async function processQueue() {
     return;
   }
 
-  const { user, message, voice } = queue[0];
+  let { user, message, voice, emotes } = queue[0];
+
+  if (config.tts.skip_emotes && emotes) {
+    message = removeEmotes(message, emotes, config.tts.read_first_emote);
+    console.log(message);
+  }
+
   // Say name if say_name enabled, skip_consecutive enabled and the last user was spoken
   const spokenText =
     config.tts.say_name && config.tts.skip_consecutive_name && lastUsername !== user

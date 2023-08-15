@@ -2,7 +2,8 @@
   "auth": {
     "twitch_bot_name": "qlulezz",
     "twitch_channel_name": "jani114",
-    "twitch_oauth": "oauth:twitchauthtoken"
+    "twitch_oauth": "oauth:twitchauthtoken",
+    "chat_debug_messages": true
   },
   "tts": {
     "ignore_exclamation": true,
@@ -11,6 +12,8 @@
     "skip_consecutive_name": true,
     "max_words": 100,
     "max_characters": 200,
+    "skip_emotes": true,
+    "read_first_emote": true,
     "voices": {
       "german": "Google German (Germany) de-DE",
       "english": "Microsoft David Desktop"
