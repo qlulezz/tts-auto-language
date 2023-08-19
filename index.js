@@ -23,10 +23,10 @@ say.getInstalledVoices((err, voices) => {
 const client = new tmi.Client({
   options: { debug: config.auth.chat_debug_messages },
   identity: {
-    username: config.auth.twitch_bot_name,
+    username: config.auth.twitch_bot_name.toLowerCase(),
     password: config.auth.twitch_oauth,
   },
-  channels: [config.auth.twitch_channel_name],
+  channels: [config.auth.twitch_channel_name.toLowerCase()],
 });
 
 client
@@ -72,35 +72,40 @@ client.on("message", (channel, tags, message, self) => {
     }
   }
 
+  // Skip if tts is disabled
+  if (!config.tts.enabled) return;
+  // Skip if message by bot
   if (self) return;
-
-  if (config.tts.ignore.includes(tags.username)) {
-    return;
-  }
-
-  // Ignore messages starting with '!' and '@'
-  if (message.at(0) === "@") {
-    message = message.split(" ").splice(1).join(" ");
-  }
-
-  if (config.tts.ignore_exclamation && (message.at(0) === "!" || message.at(0) === "@")) {
-    return;
-  }
-
+  // Skip if message starts with !
+  if (config.tts.ignore_exclamation && message.at(0) === "!") return;
+  // Skip if user is in ignore list
+  if (config.tts.ignore.includes(tags.username)) return;
+  // Skip if reply
+  if (config.tts.skip_replies && message.at(0) === "@") return;
+  // Skip if reply starts with !
+  if (message.split(" ").splice(1).join(" ").at(0) === "!") return;
+  // Skip if maximum length is reached
   if (
     message.split(" ").length >= config.tts.max_words &&
     message.length >= config.tts.max_characters
   ) {
     return;
   }
+  // Remove name from reply
+  if (config.tts.skip_name_in_reply && message.at(0) === "@") {
+    message = message.split(" ").splice(1).join(" ");
+  }
 
+  const individualVoice = getIndividualVoice(tags.username);
   const matches = lngDetector.detect(message);
   const german = isGerman(matches);
 
   queue.push({
     user: replaceName(tags.username),
-    message: message,
-    voice: german ? config.tts.voices.german : config.tts.voices.english,
+    message,
+    voice:
+      individualVoice ||
+      (german ? config.tts.voices.german : config.tts.voices.english),
     emotes: tags.emotes,
   });
 
@@ -123,13 +128,25 @@ async function processQueue() {
     message = removeEmotes(message, emotes, config.tts.read_first_emote);
   }
 
+  if (message.trim() === "") {
+    lastUsername = user;
+    queue.shift();
+    processQueue();
+    return;
+  }
+
   // Say name if say_name enabled, skip_consecutive enabled and the last user was spoken
   const spokenText =
-    config.tts.say_name && config.tts.skip_consecutive_name && lastUsername !== user
+    config.tts.say_name &&
+    config.tts.skip_consecutive_name &&
+    lastUsername !== user
       ? `${user}: ${message}`
       : message;
 
-  if (voice.toLowerCase().includes("google") && spokenText.split(" ").length < 100) {
+  if (
+    voice.toLowerCase().includes("google") &&
+    spokenText.split(" ").length < 100
+  ) {
     await readText(spokenText, voice);
     lastUsername = user;
     queue.shift();
@@ -139,8 +156,8 @@ async function processQueue() {
 
   say.speak(spokenText, voice, 1.0, (err) => {
     if (err) {
-      log("Error trying to speak:", err, "red");
-      log("Make sure that the configured voice is listed in voices.txt");
+      log("Error trying to speak using: " + voice, "red", err);
+      log("Make sure that the configured voice is listed in voices.txt", "red");
     }
     lastUsername = user;
     queue.shift();
@@ -160,13 +177,26 @@ function isGerman(matches) {
 
 function replaceName(name) {
   let newName = name;
-  if (config.tts.name_replacement[name]) {
-    newName = config.tts.name_replacement[name];
+
+  for (const n of Object.keys(config.tts.name_replacement)) {
+    if (n.toLowerCase() == newName.toLowerCase()) {
+      newName = config.tts.name_replacement[n];
+    }
   }
+
   if (!config.tts.read_numbers_in_name) {
     newName = newName.replace(/[0-9]/g, "");
   }
   return newName;
+}
+
+function getIndividualVoice(name) {
+  for (const n of Object.keys(config.tts.individual_voices)) {
+    if (n.toLowerCase() == name.toLowerCase()) {
+      return config.tts.individual_voices[n];
+    }
+  }
+  return false;
 }
 
 function setNickname(username, nickname) {

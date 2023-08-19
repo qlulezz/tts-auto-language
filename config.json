@@ -6,7 +6,10 @@
     "chat_debug_messages": true
   },
   "tts": {
+    "enabled": true,
     "ignore_exclamation": true,
+    "skip_replies": false,
+    "skip_name_in_reply": false,
     "say_name": true,
     "read_numbers_in_name": false,
     "skip_consecutive_name": true,
@@ -17,6 +20,9 @@
     "voices": {
       "german": "Google German (Germany) de-DE",
       "english": "Microsoft David Desktop"
+    },
+    "individual_voices": {
+      "gbitz": "Google Danish (Denmark) da-DK"
     },
     "name_replacement": {
       "oegoe_": "oegoe",
