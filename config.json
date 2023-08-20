@@ -7,6 +7,7 @@
   },
   "tts": {
     "enabled": true,
+    "mods_send_commands": true,
     "ignore_exclamation": true,
     "skip_replies": false,
     "skip_name_in_reply": false,
@@ -17,6 +18,7 @@
     "max_characters": 200,
     "skip_emotes": true,
     "read_first_emote": true,
+    "name_template": "{{user}}: {{message}}",
     "voices": {
       "german": "Google German (Germany) de-DE",
       "english": "Microsoft David Desktop"

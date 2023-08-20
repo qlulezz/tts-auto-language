@@ -54,8 +54,8 @@ let queue = [];
 
 client.on("message", (channel, tags, message, self) => {
   // Check for commands
-  // Only do that if channel name is username
-  if (channel === "#" + tags.username) {
+  // Only execute commands if user is streamer or moderator
+  if (tags.badges?.broadcaster || (config.tts.mods_send_commands && tags.mod)) {
     const command = checkForCommand(message);
     switch (command.command) {
       case "tts-nickname":
@@ -140,7 +140,9 @@ async function processQueue() {
     config.tts.say_name &&
     config.tts.skip_consecutive_name &&
     lastUsername !== user
-      ? `${user}: ${message}`
+      ? config.tts.name_template
+          .replaceAll("{{message}}", message)
+          .replaceAll("{{user}}", user)
       : message;
 
   if (
