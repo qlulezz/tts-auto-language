@@ -177,18 +177,19 @@ function isGerman(matches) {
   }
 }
 
+// Remove numbers or replace name with name from list
 function replaceName(name) {
   let newName = name;
+  if (!config.tts.read_numbers_in_name) {
+    newName = newName.replace(/[0-9_]/g, " ").trim();
+  }
 
   for (const n of Object.keys(config.tts.name_replacement)) {
-    if (n.toLowerCase() == newName.toLowerCase()) {
+    if (n.toLowerCase() == name.toLowerCase()) {
       newName = config.tts.name_replacement[n];
     }
   }
 
-  if (!config.tts.read_numbers_in_name) {
-    newName = newName.replace(/[0-9]/g, "");
-  }
   return newName;
 }
 
